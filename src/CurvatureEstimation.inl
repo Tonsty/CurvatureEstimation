@@ -15,6 +15,15 @@ void CurvatureEstimation<Real>::compute(std::vector<Real>& gaussian, std::vector
 		std::vector<std::vector<Real> > dists;
 		kdtree->KnnSearch((Real*)(points+3*i),1,indices,dists,knn);
 
+		Real gauss;
+		if(!adaptive) gauss=this->gauss;
+		else
+		{
+			Real radius2=dists[0][knn-1];
+			Real density=knn/(3.1415926*radius2);
+			gauss=this->gauss/density;
+		}
+
 		Eigen::Matrix<Real,3,1> eval_pnt;
 		eval_pnt(0)=points[3*i+0];
 		eval_pnt(1)=points[3*i+1];

@@ -25,6 +25,9 @@ void ShowUsage(char* ex)
 
 	printf("\t--gauss <gauss delta>\n");
 	printf("\t\tGauss delta for MLS.\n");
+
+	printf("\t--adaptive \n");
+	printf("\t\tPerform adaptive MLS.\n");
 }
 
 int main(int argc, char**argv)
@@ -41,13 +44,14 @@ int main(int argc, char**argv)
 	cmdLineString In, Out;
 	cmdLineInt Knn;
 	cmdLineFloat Gauss;
+	cmdLineReadable Adaptive;
 	char* paramNames[]=
 	{
-		"in","out","knn","gauss"
+		"in","out","knn","gauss","adaptive"
 	};
 	cmdLineReadable* params[]= 
 	{
-		&In,&Out,&Knn,&Gauss
+		&In,&Out,&Knn,&Gauss,&Adaptive
 	};
 	int paramNum=sizeof(paramNames)/sizeof(char*);
 	cmdLineParse(argc-1,&argv[1],paramNames,paramNum,params,1);
@@ -86,7 +90,7 @@ int main(int argc, char**argv)
 	printf("Computing MLS curvatures ...\n");
 	CurvatureEstimation<float> estimator;
 	estimator.setData((float*)mInfo.vertices.data(),(float*)mInfo.vertexNormals.data(),mInfo.vertices.size(),&kdtree);
-	estimator.setParameters(Knn.value,Gauss.value);
+	estimator.setParameters(Knn.value,Gauss.value,Adaptive.set);
 	std::vector<float> gaussian, mean, k1, k2;
 	estimator.compute(gaussian,mean,k1,k2);
 	printf("Finished computing in: %f\n", Time()-t);

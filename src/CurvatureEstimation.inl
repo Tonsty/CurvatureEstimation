@@ -8,20 +8,32 @@ void CurvatureEstimation<Real>::compute(std::vector<Real>& gaussian, std::vector
 
 	int num_procs=omp_get_num_procs();
 	omp_set_num_threads(num_procs);
+
+	std::vector<std::vector<int> > indices; 
+	std::vector<std::vector<Real> > dists;
+	kdtree->KnnSearch((Real*)(points),npts,indices,dists,knn);
+
+	Real midRadius2;
+	if(adaptive>0)
+	{
+		std::vector<Real> radius2s(npts);
+		for(int i=0;i<npts;i++) radius2s[i]=dists[i][knn-1];
+		int mid=npts/2;
+		nth_element(radius2s.begin(),radius2s.begin()+mid,radius2s.end());
+		midRadius2=radius2s[mid];
+		midRadius=(Real)sqrt(midRadius2);
+	}
+
 #pragma omp parallel for
 	for(int i=0;i<npts;i++)
 	{
-		std::vector<std::vector<int> > indices; 
-		std::vector<std::vector<Real> > dists;
-		kdtree->KnnSearch((Real*)(points+3*i),1,indices,dists,knn);
-
 		Real gauss;
-		if(!adaptive) gauss=this->gauss;
+		if(adaptive<0) gauss=this->gauss;
 		else
 		{
-			Real radius2=dists[0][knn-1];
-			Real density=knn/(3.1415926*radius2);
-			gauss=this->gauss/density;
+			Real radius2=dists[i][knn-1];
+			Real density=(Real)midRadius2/radius2;
+			gauss=adaptive*midRadius/density;
 		}
 
 		Eigen::Matrix<Real,3,1> eval_pnt;
@@ -33,9 +45,9 @@ void CurvatureEstimation<Real>::compute(std::vector<Real>& gaussian, std::vector
 		Eigen::Matrix<Real,3,Eigen::Dynamic> neighbor_pnts(3,knn);
 		for(int ii=0;ii<knn;ii++)
 		{
-			neighbor_pnts(0,ii)=points[3*indices[0][ii]+0];
-			neighbor_pnts(1,ii)=points[3*indices[0][ii]+1];
-			neighbor_pnts(2,ii)=points[3*indices[0][ii]+2];
+			neighbor_pnts(0,ii)=points[3*indices[i][ii]+0];
+			neighbor_pnts(1,ii)=points[3*indices[i][ii]+1];
+			neighbor_pnts(2,ii)=points[3*indices[i][ii]+2];
 		}
 		//std::cout<<"neighbor_pnts=\n"<<neighbor_pnts<<std::endl;
 
@@ -51,9 +63,9 @@ void CurvatureEstimation<Real>::compute(std::vector<Real>& gaussian, std::vector
 		Eigen::Matrix<Real,3,Eigen::Dynamic> neighbor_normals(3,knn);
 		for(int ii=0;ii<knn;ii++)
 		{
-			neighbor_normals(0,ii)=normals[3*indices[0][ii]+0];
-			neighbor_normals(1,ii)=normals[3*indices[0][ii]+1];
-			neighbor_normals(2,ii)=normals[3*indices[0][ii]+2];
+			neighbor_normals(0,ii)=normals[3*indices[i][ii]+0];
+			neighbor_normals(1,ii)=normals[3*indices[i][ii]+1];
+			neighbor_normals(2,ii)=normals[3*indices[i][ii]+2];
 		}
 		//std::cout<<"neighbor_normals=\n"<<neighbor_normals<<std::endl;
 

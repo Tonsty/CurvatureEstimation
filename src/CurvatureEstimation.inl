@@ -8,6 +8,7 @@ void CurvatureEstimation<Real>::compute(std::vector<Real>& gaussian, std::vector
 
 	int num_procs=omp_get_num_procs();
 	omp_set_num_threads(num_procs);
+	printf("Using %d threads\n", num_procs);
 
 	std::vector<std::vector<int> > indices; 
 	std::vector<std::vector<Real> > dists;

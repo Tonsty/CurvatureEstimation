@@ -25,7 +25,7 @@ void CurvatureEstimation<Real>::compute(std::vector<Real>& gaussian, std::vector
 		midRadius=(Real)sqrt(midRadius2);
 	}
 
-#pragma omp parallel for
+#pragma omp parallel for schedule (dynamic,1000)
 	for(int i=0;i<npts;i++)
 	{
 		Real gauss;

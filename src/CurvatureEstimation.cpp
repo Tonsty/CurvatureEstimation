@@ -12,7 +12,7 @@
 typedef PlyVertexWithNormal InOutPlyVertex;
 
 template<class Vertex>
-void saveVTK(const char*vtkFileName, const std::vector<Vertex> &vertices, const std::vector<std::vector<int> > polygons)
+void saveVTK(const char*vtkFileName, const std::vector<Vertex> &vertices)
 {
 	// Open file
 	FILE*vtkFile=fopen(vtkFileName,"w");
@@ -51,6 +51,39 @@ void saveVTK(const char*vtkFileName, const std::vector<Vertex> &vertices, const 
 	fclose(vtkFile);
 }
 
+template<class Vertex>
+void saveVTKForNormalDisplay(const char*vtkFileName, const std::vector<Vertex> &vertices, float scale)
+{
+	// Open file
+	FILE*vtkFile=fopen(vtkFileName,"w");
+
+	int npts=vertices.size();
+
+	// Write the header information
+	fprintf(vtkFile,"# vtk DataFile Version 3.0\n");
+	fprintf(vtkFile,"vtk output\n");
+	fprintf(vtkFile,"ASCII\n");
+	fprintf(vtkFile,"DATASET POLYDATA\n");
+	fprintf(vtkFile,"POINTS %d float\n",npts*2);
+
+	// Iterate through the points
+	for(int i=0;i<npts;++i) 
+	{
+		Point3D<float> point1=vertices[i].point;
+		Point3D<float> normal=vertices[i].normal;
+		Point3D<float> point2=point1+normal*0.02/scale;
+		fprintf(vtkFile,"%f %f %f\n",point1[0],point1[1],point1[2]);
+		fprintf(vtkFile,"%f %f %f\n",point2[0],point2[1],point2[2]);
+	}
+
+	// Write lines
+	fprintf(vtkFile,"\nLINES %d %d\n", npts, 3*npts);
+	for(int i=0;i<npts;++i) fprintf(vtkFile,"2 %d %d\n", 2*i, 2*i+1);
+
+	// Close file
+	fclose(vtkFile);
+}
+
 void ShowUsage(char* ex)
 {
 	printf("Usage: %s\n",ex);
@@ -72,13 +105,15 @@ void ShowUsage(char* ex)
 	printf("\t\tto generate a gauss for midRadius point,\n");
 	printf("\t\tgauss for others are adaptive.\n\n");
 
-
 	printf("\t--vtk <vtkfile name>\n");
 	printf("\t\tSave vtk format file.\n\n");
 
 	printf("\t--normalize\n");
 	printf("\t\tIf this flag is set, the bounding box will\n");
 	printf("\t\tbe normalized to [0,0,0]~[1,1,1].\n\n");
+
+	printf("\t--vtkNormalDisplay <vtkfile name for normal display>\n");
+	printf("\t\tSave vtk format file for normal display.\n\n");
 }
 
 int main(int argc, char**argv)
@@ -92,16 +127,16 @@ int main(int argc, char**argv)
 	//int number_of_neighbor=20; //dragon
 	//int gaussian_param=0.0003; //dragon
 
-	cmdLineString In,Out,VTK;
+	cmdLineString In,Out,VTK,VTKNormalDisplay;
 	cmdLineInt Knn;
 	cmdLineFloat Gauss,Adaptive(0.3),Normalize;
 	char* paramNames[]=
 	{
-		"in","out","knn","gauss","adaptive","vtk","normalize"
+		"in","out","knn","gauss","adaptive","vtk","normalize","vtkNormalDisplay"
 	};
 	cmdLineReadable* params[]= 
 	{
-		&In,&Out,&Knn,&Gauss,&Adaptive,&VTK,&Normalize
+		&In,&Out,&Knn,&Gauss,&Adaptive,&VTK,&Normalize,&VTKNormalDisplay
 	};
 	int paramNum=sizeof(paramNames)/sizeof(char*);
 	cmdLineParse(argc-1,&argv[1],paramNames,paramNum,params,1);
@@ -162,11 +197,14 @@ int main(int argc, char**argv)
 			inVertices[i].point=(inVertices[i].point+translate)*scale;
 			inVertices[i].curvature/=scale;
 		}
+		translate[0]=translate[1]=translate[2]=0;
+		scale=1.0;
 	}
 
 	PlyWritePolygons(Out.value,inVertices,polygons,ft);
 
-	if(VTK.set) saveVTK(VTK.value,inVertices,polygons);
+	if(VTK.set) saveVTK(VTK.value,inVertices);
+	if(VTKNormalDisplay.set) saveVTKForNormalDisplay(VTKNormalDisplay.value,inVertices,scale);
 
 	return EXIT_SUCCESS;
 }

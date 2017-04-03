@@ -1,5 +1,5 @@
 template<typename Real>
-KDTree<Real>::KDTree(): Index(flann::KDTreeSingleIndexParams(10)) {}
+KDTree<Real>::KDTree(): flann::Index<flann::L2<Real> >(flann::KDTreeSingleIndexParams(10)) {}
 
 template<typename Real>
 void KDTree<Real>::setInputPoints(Real* points, size_t npts)

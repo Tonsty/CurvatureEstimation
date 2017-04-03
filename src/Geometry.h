@@ -29,6 +29,7 @@ DAMAGE.
 #define GEOMETRY_INCLUDED
 #include <math.h>
 #include <vector>
+#include <cstddef>
 
 template<class Real>
 Real Random(void);

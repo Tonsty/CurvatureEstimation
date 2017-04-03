@@ -7,6 +7,8 @@ template<typename Real>
 class KDTree: public flann::Index<flann::L2<Real> >
 {
 	using flann::Index<flann::L2<Real> >::knnSearch;
+	using flann::Index<flann::L2<Real> >::buildIndex;
+	using flann::Index<flann::L2<Real> >::Index;
 public:
 	KDTree();
 	void setInputPoints(Real* points, size_t npts);

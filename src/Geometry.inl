@@ -25,6 +25,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
 */
+#include<cstdlib>
 /////////////
 // Point3D //
 /////////////
@@ -345,52 +346,52 @@ int EdgeInCube(const Point3D<Real>& ctr,const Real& w,const Point3D<Real> e[2])
 	return 1;
 #endif
 }
-template <class Real>
-int TriangleInCube(const Point3D<Real>& ctr,const Real& w,const Point3D<Real> t[3])
-{
-	Point3D<Real> e[2],n,nn[3];
-	int oc[3];
-	oc[0]=OutCode(ctr,w,t[0]);
-	oc[1]=OutCode(ctr,w,t[1]);
-	oc[2]=OutCode(ctr,w,t[2]);
-	if(!oc[0] || !oc[1] || !oc[2])
-		return 1;
-	if(oc[0] & oc[1] & oc[2])
-		return 0;
+// template <class Real>
+// int TriangleInCube(const Point3D<Real>& ctr,const Real& w,const Point3D<Real> t[3])
+// {
+// 	Point3D<Real> e[2],n,nn[3];
+// 	int oc[3];
+// 	oc[0]=OutCode(ctr,w,t[0]);
+// 	oc[1]=OutCode(ctr,w,t[1]);
+// 	oc[2]=OutCode(ctr,w,t[2]);
+// 	if(!oc[0] || !oc[1] || !oc[2])
+// 		return 1;
+// 	if(oc[0] & oc[1] & oc[2])
+// 		return 0;
 
-	for(int i=0;i<3;i++)
-	{
-		e[0]=t[i];
-		e[1]=t[(i+1)%3];
-		if(EdgeInCube(ctr,w,e))
-			return 1;
-	}
+// 	for(int i=0;i<3;i++)
+// 	{
+// 		e[0]=t[i];
+// 		e[1]=t[(i+1)%3];
+// 		if(EdgeInCube(ctr,w,e))
+// 			return 1;
+// 	}
 
-	n=Normal(t[0],t[1],t[2]);
-	for(int i=0;i<3;i++)
-		CrossProduct(n,t[(i+1)%3]-t[i],nn[i]);
+// 	n=Normal(t[0],t[1],t[2]);
+// 	for(int i=0;i<3;i++)
+// 		CrossProduct(n,t[(i+1)%3]-t[i],nn[i]);
 
-	for(int i=0;i<Cube::EDGES;i++)
-	{
-		int c1,c2,x[3];
-		Real tt,dot[2];
-		Point3D<Real> p;
-		Cube::EdgeCorners(i,c1,c2);
-		Cube::FactorCornerIndex(c1,x[0],x[1],x[2]);
-		for(int j=0;j<3;j++)	e[0][j]=ctr[j]-w/2+w*x[j];
+// 	for(int i=0;i<Cube::EDGES;i++)
+// 	{
+// 		int c1,c2,x[3];
+// 		Real tt,dot[2];
+// 		Point3D<Real> p;
+// 		Cube::EdgeCorners(i,c1,c2);
+// 		Cube::FactorCornerIndex(c1,x[0],x[1],x[2]);
+// 		for(int j=0;j<3;j++)	e[0][j]=ctr[j]-w/2+w*x[j];
 
-		Cube::FactorCornerIndex(c2,x[0],x[1],x[2]);
-		for(int j=0;j<3;j++)	e[1][j]=ctr[j]-w/2+w*x[j];
+// 		Cube::FactorCornerIndex(c2,x[0],x[1],x[2]);
+// 		for(int j=0;j<3;j++)	e[1][j]=ctr[j]-w/2+w*x[j];
 
-		dot[0]=DotProduct(n,e[0]-t[0]);
-		dot[1]=DotProduct(n,e[1]-t[0]);
-		if(dot[0]*dot[1] >=0 )	continue;
-		tt=dot[0]/(dot[0]-dot[1]);
-		p=e[0]*(Real(1.0)-tt)+e[1]*tt;
-		if(DotProduct(p-t[0],nn[0])>0 && DotProduct(p-t[1],nn[1])>0 && DotProduct(p-t[2],nn[2])>0 )
-			return 1;
-	}
-	return 0;
-}
+// 		dot[0]=DotProduct(n,e[0]-t[0]);
+// 		dot[1]=DotProduct(n,e[1]-t[0]);
+// 		if(dot[0]*dot[1] >=0 )	continue;
+// 		tt=dot[0]/(dot[0]-dot[1]);
+// 		p=e[0]*(Real(1.0)-tt)+e[1]*tt;
+// 		if(DotProduct(p-t[0],nn[0])>0 && DotProduct(p-t[1],nn[1])>0 && DotProduct(p-t[2],nn[2])>0 )
+// 			return 1;
+// 	}
+// 	return 0;
+// }
 
 
